@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/Gerenciador-de-reino/',
   define: {
     // Garante que o process.env seja acessível no cliente, 
     // priorizando variáveis do sistema injetadas pelo Netlify
