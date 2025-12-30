@@ -173,10 +173,15 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const isDeselecting = prev.stats.governmentId === govId;
       const oldGov = GOVERNMENT_TYPES.find(g => g.id === prev.stats.governmentId);
       const newAttrs = { ...prev.stats.attributes };
+      let newFeats = [...(prev.stats.feats || [])];
 
+      // Remover bônus do governo antigo
       if (oldGov) {
         oldGov.boosts.forEach(b => newAttrs[b].value -= 2);
         prev.stats.governmentFreeBoosts.forEach(b => { if (b) newAttrs[b].value -= 2; });
+        if (oldGov.bonusFeat) {
+          newFeats = newFeats.filter(f => f !== oldGov.bonusFeat);
+        }
       }
 
       if (isDeselecting) {
@@ -187,6 +192,7 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
             governmentId: undefined,
             governmentFreeBoosts: [],
             attributes: newAttrs,
+            feats: newFeats,
             skills: prev.stats.skills.map(skill => {
               if (oldGov?.skills.includes(skill.name)) return { ...skill, rank: 0 };
               return skill;
@@ -197,7 +203,13 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       const newGov = GOVERNMENT_TYPES.find(g => g.id === govId);
       if (!newGov) return prev;
+      
+      // Adicionar bônus do novo governo
       newGov.boosts.forEach(b => newAttrs[b].value += 2);
+      if (newGov.bonusFeat && !newFeats.includes(newGov.bonusFeat)) {
+        newFeats.push(newGov.bonusFeat);
+      }
+
       return { 
         ...prev, 
         stats: { 
@@ -205,6 +217,7 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
           governmentId: govId,
           governmentFreeBoosts: new Array(newGov.freeBoosts).fill(null),
           attributes: newAttrs,
+          feats: newFeats,
           skills: prev.stats.skills.map(skill => {
             if (newGov.skills.includes(skill.name)) return { ...skill, rank: 2 };
             return skill;

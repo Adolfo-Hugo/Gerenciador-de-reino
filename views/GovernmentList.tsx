@@ -49,41 +49,50 @@ const GovernmentList: React.FC = () => {
                   {gov.description}
                 </p>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-black dark:bg-white text-white dark:text-black p-3 shadow-brutal">
-                    <span className="text-[10px] font-black uppercase block mb-1 opacity-60">Melhorias</span>
-                    <div className="text-xs font-black uppercase">
-                      {gov.boosts.map(b => attrLabels[b]).join(', ')}
-                    </div>
-                    {gov.freeBoosts > 0 && (
-                      <div className="mt-2 pt-2 border-t border-white/20">
-                        <span className="text-[9px] font-black uppercase block mb-1 opacity-40">+ {gov.freeBoosts} Livre</span>
-                        {isActive ? (
-                          <div className="space-y-2">
-                            {new Array(gov.freeBoosts).fill(null).map((_, i) => (
-                              <select
-                                key={i}
-                                value={activeKingdom.stats.governmentFreeBoosts[i] || ''}
-                                onChange={(e) => setGovernmentFreeBoost(i, e.target.value as KingdomAttributeKey)}
-                                className="w-full bg-white text-black text-[10px] font-black uppercase border-2 border-black p-1 focus:ring-0"
-                              >
-                                <option value="" disabled>Selecionar...</option>
-                                {(Object.keys(attrLabels) as KingdomAttributeKey[]).map(attr => (
-                                  <option key={attr} value={attr}>{attrLabels[attr]}</option>
-                                ))}
-                              </select>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-[10px] italic opacity-40">Adote para configurar</div>
-                        )}
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-black dark:bg-white text-white dark:text-black p-3 shadow-brutal">
+                      <span className="text-[10px] font-black uppercase block mb-1 opacity-60">Melhorias</span>
+                      <div className="text-xs font-black uppercase">
+                        {gov.boosts.map(b => attrLabels[b]).join(', ')}
                       </div>
-                    )}
+                      {gov.freeBoosts > 0 && (
+                        <div className="mt-2 pt-2 border-t border-white/20">
+                          <span className="text-[9px] font-black uppercase block mb-1 opacity-40">+ {gov.freeBoosts} Livre</span>
+                          {isActive && activeKingdom ? (
+                            <div className="space-y-2">
+                              {new Array(gov.freeBoosts).fill(null).map((_, i) => (
+                                <select
+                                  key={i}
+                                  value={activeKingdom.stats.governmentFreeBoosts[i] || ''}
+                                  onChange={(e) => setGovernmentFreeBoost(i, e.target.value as KingdomAttributeKey)}
+                                  className="w-full bg-white text-black text-[10px] font-black uppercase border-2 border-black p-1 focus:ring-0"
+                                >
+                                  <option value="" disabled>Selecionar...</option>
+                                  {(Object.keys(attrLabels) as KingdomAttributeKey[]).map(attr => (
+                                    <option key={attr} value={attr}>{attrLabels[attr]}</option>
+                                  ))}
+                                </select>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-[10px] italic opacity-40">Adote para configurar</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-primary text-white p-3 shadow-brutal border-2 border-black">
+                      <span className="text-[10px] font-black uppercase block mb-1 opacity-60">Proficiências</span>
+                      <div className="text-xs font-black uppercase">
+                        {gov.skills.join(', ')}
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-primary text-white p-3 shadow-brutal border-2 border-black">
-                    <span className="text-[10px] font-black uppercase block mb-1 opacity-60">Proficiências</span>
-                    <div className="text-xs font-black uppercase">
-                      {gov.skills.join(', ')}
+
+                  <div className="bg-accent text-white p-3 shadow-brutal border-2 border-black">
+                    <span className="text-[10px] font-black uppercase block mb-1 opacity-70">Talento Bônus</span>
+                    <div className="text-sm font-black uppercase italic">
+                      {gov.bonusFeat}
                     </div>
                   </div>
                 </div>

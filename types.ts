@@ -48,6 +48,7 @@ export interface GovernmentType {
   boosts: KingdomAttributeKey[];
   freeBoosts: number;
   skills: string[];
+  bonusFeat: string; // Novo: Talento concedido automaticamente
 }
 
 export interface CharterType {

@@ -8,7 +8,8 @@ export const GOVERNMENT_TYPES: GovernmentType[] = [
     description: 'O governo é centralizado em um único indivíduo com poder absoluto.',
     boosts: ['economy', 'stability'],
     freeBoosts: 1,
-    skills: ['INTRIGA', 'ARTES BÉLICAS']
+    skills: ['INTRIGA', 'ARTES BÉLICAS'],
+    bonusFeat: 'Coibir Dissidência'
   },
   {
     id: 'oligarchy',
@@ -16,7 +17,8 @@ export const GOVERNMENT_TYPES: GovernmentType[] = [
     description: 'O poder é exercido por um pequeno grupo de elite ou famílias influentes.',
     boosts: ['economy', 'loyalty'],
     freeBoosts: 1,
-    skills: ['INDÚSTRIA', 'POLÍTICA']
+    skills: ['INDÚSTRIA', 'POLÍTICA'],
+    bonusFeat: 'Comercialização Privilegiada'
   },
   {
     id: 'republic',
@@ -24,31 +26,35 @@ export const GOVERNMENT_TYPES: GovernmentType[] = [
     description: 'O governo é gerido por representantes eleitos pelos cidadãos.',
     boosts: ['culture', 'stability'],
     freeBoosts: 1,
-    skills: ['ARTES', 'ERUDIÇÃO']
+    skills: ['ARTES', 'ERUDIÇÃO'],
+    bonusFeat: 'Unir Esforços'
   },
   {
     id: 'thaumocracy',
-    name: 'Teocracia Mística',
+    name: 'Taumocracia',
     description: 'As leis e o governo são baseados em princípios mágicos ou divinos.',
     boosts: ['culture', 'economy'],
     freeBoosts: 1,
-    skills: ['MAGIA', 'ERUDIÇÃO']
+    skills: ['MAGIA', 'ERUDIÇÃO'],
+    bonusFeat: 'Magia Pragmática'
   },
   {
-    id: 'monarchy',
-    name: 'Monarquia',
-    description: 'A soberania é exercida por um monarca hereditário ou eleito.',
+    id: 'feudalism',
+    name: 'Feudalismo',
+    description: 'A soberania baseada em laços de suserania e vassalagem.',
     boosts: ['loyalty', 'stability'],
     freeBoosts: 1,
-    skills: ['GOVERNANÇA', 'POLÍTICA']
+    skills: ['GOVERNANÇA', 'POLÍTICA'],
+    bonusFeat: 'Feudos Fortificados'
   },
   {
-    id: 'confederacy',
-    name: 'Confederação / Conselho Popular',
+    id: 'yeomanry',
+    name: 'Yeomanry',
     description: 'Uma união de grupos ou tribos com forte foco em lealdade e tradições locais.',
     boosts: ['loyalty', 'culture'],
     freeBoosts: 1,
-    skills: ['AGRICULTURA', 'ECOSSISTEMA']
+    skills: ['AGRICULTURA', 'ECOSSISTEMA'],
+    bonusFeat: 'Dar um Jeito'
   }
 ];
 
