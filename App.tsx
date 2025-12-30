@@ -14,10 +14,9 @@ import KingdomFeats from './views/KingdomFeats';
 import KingdomTurn from './views/KingdomTurn';
 import KingdomSelector from './views/KingdomSelector';
 import KingdomEvolution from './views/KingdomEvolution';
-import RoyalAdvisor from './views/RoyalAdvisor';
 import { BrutalButton } from './components/UI';
 
-type ViewType = 'sheet' | 'skills' | 'activities' | 'settlements' | 'events' | 'government' | 'charter' | 'heartland' | 'structures' | 'turn' | 'feats' | 'evolution' | 'advisor';
+type ViewType = 'sheet' | 'skills' | 'activities' | 'settlements' | 'events' | 'government' | 'charter' | 'heartland' | 'structures' | 'turn' | 'feats' | 'evolution';
 
 const MainApp: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>('sheet');
@@ -63,7 +62,7 @@ const MainApp: React.FC = () => {
 
       <nav className="mb-8 border-b-2 border-black dark:border-white overflow-x-auto pb-1">
         <ul className="flex flex-nowrap gap-6 md:gap-8 font-bold uppercase tracking-wider text-sm min-w-max">
-          {(['sheet', 'evolution', 'turn', 'advisor', 'government', 'charter', 'heartland', 'skills', 'feats', 'activities', 'structures', 'settlements', 'events'] as const).map((view) => (
+          {(['sheet', 'evolution', 'turn', 'government', 'charter', 'heartland', 'skills', 'feats', 'activities', 'structures', 'settlements', 'events'] as const).map((view) => (
             <li key={view}>
               <button 
                 onClick={() => setActiveView(view)}
@@ -72,7 +71,6 @@ const MainApp: React.FC = () => {
                 {view === 'sheet' && 'Atributos'}
                 {view === 'evolution' && 'Evolução'}
                 {view === 'turn' && 'Turno'}
-                {view === 'advisor' && 'Conselheiro'}
                 {view === 'government' && 'Governo'}
                 {view === 'charter' && 'Licenças'}
                 {view === 'heartland' && 'Região'}
@@ -92,7 +90,6 @@ const MainApp: React.FC = () => {
         {activeView === 'sheet' && <KingdomSheet />}
         {activeView === 'evolution' && <KingdomEvolution />}
         {activeView === 'turn' && <KingdomTurn />}
-        {activeView === 'advisor' && <RoyalAdvisor />}
         {activeView === 'government' && <GovernmentList />}
         {activeView === 'charter' && <CharterList />}
         {activeView === 'heartland' && <HeartlandList />}
