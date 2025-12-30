@@ -11,8 +11,6 @@ const KingdomSheet: React.FC = () => {
   if (!kingdom) return null;
 
   const currentGov = GOVERNMENT_TYPES.find(g => g.id === kingdom.stats.governmentId);
-  const currentCharter = CHARTER_TYPES.find(c => c.id === kingdom.stats.charterId);
-  const currentHeartland = HEARTLAND_TYPES.find(h => h.id === kingdom.stats.heartlandId);
 
   const handleAttrChange = (key: string, val: string) => {
     const num = parseInt(val) || 0;
@@ -35,17 +33,6 @@ const KingdomSheet: React.FC = () => {
     updateStats({ resources: newResources });
   };
 
-  const adjustFame = (amount: number) => {
-    const newVal = Math.max(0, kingdom.stats.fame + amount);
-    updateStats({ fame: newVal });
-  };
-
-  const adjustInfamy = (amount: number) => {
-    const newVal = Math.max(0, kingdom.stats.infamy + amount);
-    updateStats({ infamy: newVal });
-  };
-
-  // Cálculo de Dados de Recursos
   const size = kingdom.stats.controlDC.size;
   const level = kingdom.stats.level;
   const bonusDice = kingdom.stats.resources.bonusDice || 0;
@@ -76,20 +63,19 @@ const KingdomSheet: React.FC = () => {
     updateStats({ controlDC: { ...kingdom.stats.controlDC, size: newSize } });
   };
 
-  // Lógica de Consumo de Comida
   const getFoodConsumption = () => {
     if (size < 10) return 1;
     if (size < 25) return 2;
     if (size < 50) return 4;
     if (size < 100) return 6;
-    return 8; // Império
+    return 8;
   };
 
   const handleConsumeFood = () => {
     const cost = getFoodConsumption();
     const currentFood = kingdom.stats.resources.materials.food;
     if (currentFood < cost) {
-      if (confirm(`Comida insuficiente (${currentFood}/${cost}). Deseja pagar a diferença com Pontos de Recurso (5 PR por ponto faltando)?`)) {
+      if (confirm(`Comida insuficiente (${currentFood}/${cost}). Deseja pagar a diferença com PR (5 PR por ponto faltando)?`)) {
         const diff = cost - currentFood;
         const prCost = diff * 5;
         if (kingdom.stats.resources.rp >= prCost) {
@@ -101,7 +87,7 @@ const KingdomSheet: React.FC = () => {
              }
            });
         } else {
-          alert("Pontos de Recurso insuficientes para cobrir a falta de comida!");
+          alert("PR insuficientes!");
         }
       }
     } else {
@@ -116,13 +102,9 @@ const KingdomSheet: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* GRID MESTRE DE DUAS COLUNAS (5/7) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
-        
-        {/* COLUNA DA ESQUERDA (SPAN 5) - MOTOR DO REINO */}
         <div className="lg:col-span-5 flex flex-col gap-10">
           
-          {/* Governança */}
           <BrutalCard className="pt-12">
             <SectionTitle className="-mt-16 -ml-10 mb-6 block">Governança</SectionTitle>
             <div className="space-y-4">
@@ -132,19 +114,9 @@ const KingdomSheet: React.FC = () => {
                   {currentGov ? currentGov.name : "Nenhum Selecionado"}
                 </div>
               </div>
-              {currentGov && (
-                <div className="p-4 border-2 border-black dark:border-white bg-primary/5 space-y-2">
-                  <p className="text-xs italic leading-tight">{currentGov.description}</p>
-                  <div className="text-[10px] font-black uppercase space-y-1">
-                    <div className="text-primary">Bônus: {currentGov.boosts.join(', ')} + {currentGov.freeBoosts} Livre</div>
-                    <div className="text-accent">Perícias Base: {currentGov.skills.join(', ')}</div>
-                  </div>
-                </div>
-              )}
             </div>
           </BrutalCard>
 
-          {/* Valores de Atributo */}
           <BrutalCard className="pt-12">
             <SectionTitle className="-mt-16 -ml-10 mb-6 block">Valores de Atributo</SectionTitle>
             <div className="space-y-4">
@@ -165,14 +137,13 @@ const KingdomSheet: React.FC = () => {
                     type="number" 
                     value={attr.value}
                     onChange={(e) => handleAttrChange(key, e.target.value)}
-                    className="w-20 h-16 border-4 border-black dark:border-white text-center font-black text-xl bg-white dark:bg-surface-dark focus:ring-4 focus:ring-primary outline-none transition-all shadow-brutal" 
+                    className="w-20 h-16 border-4 border-black dark:border-white text-center font-black text-xl bg-white dark:bg-surface-dark shadow-brutal" 
                   />
                 </div>
               ))}
             </div>
           </BrutalCard>
 
-          {/* CD de Controle */}
           <BrutalCard className="relative py-8">
             <div className="absolute -top-4 left-6 bg-black dark:bg-white text-white dark:text-black px-3 py-1 font-black text-xs uppercase border-2 border-black shadow-brutal">CD de Controle</div>
             <div className="flex items-center justify-around gap-2 mt-2">
@@ -202,7 +173,6 @@ const KingdomSheet: React.FC = () => {
             </div>
           </BrutalCard>
 
-          {/* Dados de Recursos (ESQUERDA) */}
           <BrutalCard className="relative py-8">
             <div className="absolute -top-4 left-6 bg-primary text-white px-3 py-1 font-black text-xs uppercase border-2 border-black shadow-brutal">Dados de Recursos</div>
             <div className="space-y-6 mt-2">
@@ -213,16 +183,6 @@ const KingdomSheet: React.FC = () => {
                     <span className="text-[10px] font-black">{dieType}</span>
                   </div>
                   <span className="text-[8px] font-black uppercase mt-1">Total</span>
-                </div>
-                <span className="text-xl font-black">=</span>
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 flex items-center justify-center font-black text-lg border-b-4 border-black dark:border-white">{level}</div>
-                  <span className="text-[8px] uppercase font-bold mt-1">Nvl</span>
-                </div>
-                <span className="text-lg font-black">+</span>
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 flex items-center justify-center font-black text-lg border-b-4 border-black dark:border-white">4</div>
-                  <span className="text-[8px] uppercase font-bold mt-1">Base</span>
                 </div>
               </div>
               <BrutalButton onClick={handleRollResources} className="w-full text-[10px] py-2 flex items-center justify-center gap-1">
@@ -236,7 +196,6 @@ const KingdomSheet: React.FC = () => {
             </div>
           </BrutalCard>
 
-          {/* Materiais (ESQUERDA) */}
           <BrutalCard className="relative pt-10 pb-6">
             <div className="absolute -top-4 left-6 bg-primary text-white border-2 border-black px-3 py-1 font-black uppercase text-xs z-10 shadow-brutal">
               MATERIAIS
@@ -272,7 +231,6 @@ const KingdomSheet: React.FC = () => {
             </div>
           </BrutalCard>
 
-          {/* Pontos de Recurso (ESQUERDA) */}
           <BrutalCard className="flex flex-col items-center justify-center py-6 bg-[#e5e7eb] dark:bg-zinc-800 border-4 border-black">
              <span className="text-[10px] font-black uppercase mb-2 tracking-wider">PONTOS DE RECURSO (PR)</span>
              <input 
@@ -281,14 +239,10 @@ const KingdomSheet: React.FC = () => {
                onChange={e => updateStats({ resources: { ...kingdom.stats.resources, rp: parseInt(e.target.value) || 0 }})}
                className="w-full bg-transparent border-none text-center font-black text-6xl text-primary focus:ring-0"
              />
-             <div className="text-[9px] font-black uppercase mt-2 opacity-60">ACORDOS COMERCIAIS: {kingdom.stats.resources.tradeAgreements}</div>
           </BrutalCard>
         </div>
 
-        {/* COLUNA DA DIREITA (SPAN 7) - STATUS E ESTRUTURA */}
         <div className="lg:col-span-7 flex flex-col gap-10">
-          
-          {/* Resumo de Status */}
           <BrutalCard className="bg-primary/5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
@@ -328,33 +282,26 @@ const KingdomSheet: React.FC = () => {
                       <label className="block text-xs font-black uppercase mb-1 tracking-widest opacity-60">Fama</label>
                       <div className="flex items-end gap-2">
                         <BrutalInput type="number" value={kingdom.stats.fame} onChange={e => updateStats({fame: parseInt(e.target.value) || 0})} className="text-3xl flex-grow" />
-                        <button onClick={() => adjustFame(-1)} className="mb-2 w-10 h-10 border-2 border-black bg-red-600 text-white font-black text-xl shadow-brutal">-</button>
                       </div>
                     </div>
                     <div className="flex-1">
                       <label className="block text-xs font-black uppercase mb-1 tracking-widest opacity-60">Infâmia</label>
                       <div className="flex items-end gap-2">
                         <BrutalInput type="number" value={kingdom.stats.infamy} onChange={e => updateStats({infamy: parseInt(e.target.value) || 0})} className="text-3xl flex-grow" />
-                        <button onClick={() => adjustInfamy(-1)} className="mb-2 w-10 h-10 border-2 border-black bg-red-600 text-white font-black text-xl shadow-brutal">-</button>
                       </div>
                     </div>
-                 </div>
-                 <div className="p-3 border-2 border-black bg-accent/20 text-[10px] font-black uppercase text-center">
-                   {currentCharter?.name || "Nenhuma Licença"} • {currentHeartland?.name || "Nenhuma Região"}
                  </div>
               </div>
             </div>
           </BrutalCard>
 
-          {/* Cúpula de Liderança */}
           <BrutalCard className="relative overflow-visible pt-14">
-            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-white px-8 py-2 font-display font-black text-lg uppercase border-4 border-black shadow-brutal whitespace-nowrap z-10">
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-white px-8 py-2 font-display font-black text-lg uppercase border-4 border-black shadow-brutal z-10">
               Cúpula de Liderança
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               {Object.entries(kingdom.leaders).map(([role, name]) => (
                 <div key={role} className="flex items-start gap-3">
-                  <input type="checkbox" className="mt-1 w-6 h-6 border-4 border-black dark:border-white text-primary focus:ring-0 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" />
                   <div className="flex-grow">
                     <div className="font-display font-black text-[10px] uppercase leading-none text-primary mb-1">
                       {role.replace(/([A-Z])/g, ' $1').trim()}
@@ -372,7 +319,6 @@ const KingdomSheet: React.FC = () => {
             </div>
           </BrutalCard>
 
-          {/* Estado de Ruína */}
           <BrutalCard className="pt-12">
             <SectionTitle className="-mt-16 -ml-10 mb-6 block">Estado de Ruína</SectionTitle>
             <div className="space-y-3">
@@ -406,7 +352,6 @@ const KingdomSheet: React.FC = () => {
             </div>
           </BrutalCard>
 
-          {/* Tamanho do Reino (DIREITA) */}
           <BrutalCard className="relative py-8">
             <div className="absolute -top-4 left-6 bg-accent text-white px-3 py-1 font-black text-xs uppercase border-2 border-black shadow-brutal">Tamanho do Reino</div>
             <div className="flex flex-col items-center justify-between space-y-4">
@@ -417,7 +362,6 @@ const KingdomSheet: React.FC = () => {
                   onChange={(e) => handleSizeChange(e.target.value)}
                   className="w-28 h-14 border-4 border-black dark:border-white text-center font-black text-3xl bg-white dark:bg-surface-dark shadow-brutal"
                 />
-                <div className="text-[10px] font-black uppercase opacity-50">HEXÁGONOS</div>
               </div>
               <div className="w-full px-4">
                 <input 
@@ -426,49 +370,8 @@ const KingdomSheet: React.FC = () => {
                   className="w-full accent-primary h-2 bg-gray-200 border-2 border-black appearance-none"
                 />
               </div>
-              <div className="text-[10px] font-black uppercase text-center text-primary bg-gray-100 p-2 border-2 border-black w-full">
-                {size < 10 ? 'Aldeia' : size < 25 ? 'Vila' : size < 50 ? 'Cidade' : size < 100 ? 'Metrópole' : 'Império'}
-              </div>
             </div>
           </BrutalCard>
-
-          {/* Locais de Trabalho (DIREITA) */}
-          <BrutalCard className="relative pt-10 pb-6 bg-[#e5e7eb] dark:bg-zinc-800">
-            <div className="absolute -top-4 left-6 bg-primary text-white border-2 border-black px-3 py-1 font-black uppercase text-xs z-10 shadow-brutal">
-              LOCAIS DE TRABALHO
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { label: 'TER', key: 'lands' },
-                { label: 'MAD', key: 'wood' },
-                { label: 'MIN', key: 'mines' },
-                { label: 'PED', key: 'quarries' }
-              ].map(item => (
-                <div key={item.key} className="flex flex-col items-center">
-                  <span className="text-[8px] font-black uppercase mb-1 opacity-70">{item.label}</span>
-                  <input 
-                    type="number" 
-                    value={(kingdom.stats.resources.workplaces as any)[item.key]}
-                    onChange={e => handleResourceChange('workplaces', item.key, e.target.value)}
-                    className="w-full h-10 border-2 border-black dark:border-white bg-white dark:bg-black text-center font-black text-lg focus:ring-0 outline-none"
-                  />
-                </div>
-              ))}
-            </div>
-          </BrutalCard>
-
-          {/* CD Teste de Evento (DIREITA) */}
-          <BrutalCard className="flex flex-col items-center justify-center py-6 bg-[#e5e7eb] dark:bg-zinc-800 border-4 border-black">
-            <span className="text-[10px] font-black uppercase mb-2 tracking-wider">CD DE TESTE DE EVENTO</span>
-            <input 
-              type="number" 
-              value={kingdom.stats.resources.eventDC}
-              onChange={e => updateStats({ resources: { ...kingdom.stats.resources, eventDC: parseInt(e.target.value) || 0 }})}
-              className="w-full bg-transparent border-none text-center font-black text-6xl text-accent focus:ring-0"
-            />
-            <div className="text-[9px] font-black uppercase mt-2 opacity-60">FALHA AUTOMÁTICA EM 20+</div>
-          </BrutalCard>
-
         </div>
       </div>
     </div>
