@@ -2,7 +2,7 @@
 {
   "name": "Kingmaker Manager",
   "short_name": "Kingmaker",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#18181b",
   "theme_color": "#3f6212",
