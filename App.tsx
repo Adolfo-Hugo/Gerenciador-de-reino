@@ -42,7 +42,7 @@ const MainApp: React.FC = () => {
             </button>
           </div>
           <p className="text-sm font-bold uppercase tracking-widest opacity-80 mt-2">
-            Kingdom Management Dashboard • Nível {kingdom.stats.level} {kingdom.stats.unrest > 0 && <span className="text-red-600 dark:text-red-400 ml-4">• Desordem {kingdom.stats.unrest}</span>}
+            Gerenciador de Reino • Nível {kingdom.stats.level} {kingdom.stats.unrest > 0 && <span className="text-red-600 dark:text-red-400 ml-4">• Desordem {kingdom.stats.unrest}</span>}
           </p>
         </div>
         
@@ -109,7 +109,6 @@ const MainApp: React.FC = () => {
               <span>XP: {kingdom.stats.xp}</span>
               <span>FAMA: {kingdom.stats.fame}</span>
             </div>
-            <p className="text-[10px] font-mono opacity-30 italic">SISTEMA KINGMAKER RPG • DASHBOARD BRUTALISTA</p>
           </div>
           <div className="text-right flex-shrink-0">
             <p className="text-[10px] font-black uppercase opacity-60 tracking-widest">Forjado por Mestre Hugo S.</p>
