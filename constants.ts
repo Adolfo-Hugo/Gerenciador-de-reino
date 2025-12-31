@@ -157,6 +157,7 @@ export const INITIAL_KINGDOM_DATA: KingdomData = {
     xp: 0,
     charterFreeBoosts: [],
     governmentFreeBoosts: [],
+    creationFreeBoosts: [null, null],
     feats: [],
     builtStructures: [],
     attributes: {

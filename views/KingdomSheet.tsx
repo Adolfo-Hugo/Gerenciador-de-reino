@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { useKingdom } from '../KingdomContext';
 import { BrutalCard, BrutalInput, SectionTitle, BrutalButton } from '../components/UI';
 import { GOVERNMENT_TYPES, CHARTER_TYPES, HEARTLAND_TYPES } from '../constants';
+import { KingdomAttributeKey } from '../types';
 
 const KingdomSheet: React.FC = () => {
-  const { activeKingdom: kingdom, updateStats, updateLeaders } = useKingdom();
+  const { activeKingdom: kingdom, updateStats, updateLeaders, setCreationFreeBoost } = useKingdom();
   const [lastRPRoll, setLastRPRoll] = useState<{ total: number; dice: number[] } | null>(null);
 
   if (!kingdom) return null;
@@ -100,6 +101,8 @@ const KingdomSheet: React.FC = () => {
     }
   };
 
+  const creationBoosts = kingdom.stats.creationFreeBoosts || [null, null];
+
   return (
     <div className="flex flex-col gap-10">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
@@ -123,9 +126,14 @@ const KingdomSheet: React.FC = () => {
               <div className="flex items-center justify-between px-1 mb-1">
                 <span className="text-[10px] font-black uppercase w-20 text-center">Modificador</span>
                 <span className="text-[10px] font-black uppercase flex-grow text-center px-4">Atributo</span>
+                <div className="w-20 flex justify-center">
+                   <span className="text-[8px] font-black uppercase opacity-60 text-center leading-none">
+                     Boosts<br/>Livres
+                   </span>
+                </div>
                 <span className="text-[10px] font-black uppercase w-20 text-center">Valor Total</span>
               </div>
-              {(Object.entries(kingdom.stats.attributes) as [string, { value: number; mod: number }][]).map(([key, attr]) => (
+              {(Object.entries(kingdom.stats.attributes) as [KingdomAttributeKey, { value: number; mod: number }][]).map(([key, attr]) => (
                 <div key={key} className="flex items-center gap-3">
                   <div className="w-20 h-16 border-4 border-black dark:border-white flex items-center justify-center font-black text-xl bg-gray-100 dark:bg-gray-800 shadow-brutal">
                     {attr.mod >= 0 ? `+${attr.mod}` : attr.mod}
@@ -133,6 +141,33 @@ const KingdomSheet: React.FC = () => {
                   <div className="flex-grow bg-primary text-white font-display font-black text-center py-3 border-4 border-black dark:border-white uppercase tracking-tighter text-xs shadow-brutal flex items-center justify-center min-h-[4rem]">
                     {key === 'culture' ? 'Cultura' : key === 'economy' ? 'Economia' : key === 'loyalty' ? 'Lealdade' : 'Estabilidade'}
                   </div>
+                  
+                  {/* Checkbox de Boost Livre da Criação */}
+                  <div className="w-20 flex justify-center items-center">
+                    <input 
+                      type="checkbox"
+                      checked={creationBoosts.includes(key)}
+                      onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        if (isChecked) {
+                          const emptyIndex = creationBoosts.indexOf(null);
+                          if (emptyIndex !== -1) {
+                            setCreationFreeBoost(emptyIndex, key);
+                          } else {
+                            alert("Você já selecionou os 2 bônus livres de criação.");
+                          }
+                        } else {
+                          const index = creationBoosts.indexOf(key);
+                          if (index !== -1) {
+                            setCreationFreeBoost(index, null);
+                          }
+                        }
+                      }}
+                      className="w-7 h-7 border-4 border-black dark:border-white text-primary focus:ring-0 rounded-none bg-white dark:bg-gray-800 cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      title="Bônus Livre de Criação"
+                    />
+                  </div>
+
                   <input 
                     type="number" 
                     value={attr.value}
@@ -141,6 +176,9 @@ const KingdomSheet: React.FC = () => {
                   />
                 </div>
               ))}
+              <p className="text-[10px] font-bold uppercase opacity-60 mt-4 text-center">
+                Checkboxes: Selecione os 2 Bônus Livres da Criação (+2 cada)
+              </p>
             </div>
           </BrutalCard>
 

@@ -18,6 +18,7 @@ interface KingdomContextType {
   setGovernmentFreeBoost: (index: number, attr: KingdomAttributeKey) => void;
   setCharter: (charterId: string) => void;
   setCharterFreeBoost: (index: number, attr: KingdomAttributeKey) => void;
+  setCreationFreeBoost: (index: number, attr: KingdomAttributeKey | null) => void;
   setHeartland: (heartlandId: string) => void;
   addSettlement: (s: Settlement) => void;
   removeSettlement: (id: string) => void;
@@ -241,6 +242,29 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
+  const setCreationFreeBoost = (index: number, attr: KingdomAttributeKey | null) => {
+    updateActiveKingdom(prev => {
+      const newStats = { ...prev.stats };
+      const newAttrs = { ...newStats.attributes };
+      const newChoices = [...(newStats.creationFreeBoosts || [null, null])];
+      const oldChoice = newChoices[index];
+      
+      if (oldChoice === attr) return prev;
+
+      // Se estiver selecionando o mesmo atributo que já está na outra vaga (não permitido em PF2e criação)
+      if (attr !== null && newChoices.some((choice, i) => i !== index && choice === attr)) {
+        alert("Você não pode aplicar os dois bônus livres de criação no mesmo atributo.");
+        return prev;
+      }
+
+      if (oldChoice) newAttrs[oldChoice].value -= 2;
+      if (attr) newAttrs[attr].value += 2;
+      newChoices[index] = attr;
+      
+      return { ...prev, stats: { ...newStats, creationFreeBoosts: newChoices, attributes: newAttrs } };
+    });
+  };
+
   const setCharter = (charterId: string) => {
     updateActiveKingdom(prev => {
       const isDeselecting = prev.stats.charterId === charterId;
@@ -368,7 +392,7 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <KingdomContext.Provider value={{ 
       kingdoms, activeKingdom, selectKingdom, createNewKingdom, deleteKingdom,
-      updateStats, updateLeaders, updateSkill, toggleFeat, toggleStructure, setGovernment, setGovernmentFreeBoost, setCharter, setCharterFreeBoost, setHeartland,
+      updateStats, updateLeaders, updateSkill, toggleFeat, toggleStructure, setGovernment, setGovernmentFreeBoost, setCharter, setCharterFreeBoost, setCreationFreeBoost, setHeartland,
       addSettlement, removeSettlement, updateSettlement,
       addEvent, updateEvent, removeEvent,
       nextTurn, prevTurn

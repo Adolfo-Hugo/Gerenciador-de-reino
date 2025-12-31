@@ -78,7 +78,8 @@ export interface KingdomStats {
   charterId?: string;
   heartlandId?: string;
   charterFreeBoosts: (KingdomAttributeKey | null)[];
-  governmentFreeBoosts: (KingdomAttributeKey | null)[]; // Novo: Melhorias livres de governo
+  governmentFreeBoosts: (KingdomAttributeKey | null)[]; 
+  creationFreeBoosts: (KingdomAttributeKey | null)[]; // Novo: Dois bônus livres da criação
   feats: string[];
   builtStructures: string[]; // Nomes ou IDs das estruturas construídas
   attributes: {
