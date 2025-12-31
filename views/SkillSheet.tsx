@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useKingdom } from '../KingdomContext';
 import { BrutalCard } from '../components/UI';
-import { KingdomSkill } from '../types';
+import { KingdomSkill, KingdomAttributeKey } from '../types';
 
 const SkillSheet: React.FC = () => {
   const { activeKingdom: kingdom, updateSkill, updateStats } = useKingdom();
@@ -20,7 +20,7 @@ const SkillSheet: React.FC = () => {
   return (
     <div className="overflow-x-auto pb-4">
       <BrutalCard className="min-w-[1250px] p-0 overflow-hidden">
-        {/* Header da Tabela - Ajustado para incluir coluna CD e Rolagem */}
+        {/* Header da Tabela */}
         <div className="grid grid-cols-[180px_70px_20px_110px_50px_130px_70px_70px_70px_70px_80px_130px] gap-2 p-4 bg-gray-50 dark:bg-black/40 border-b-4 border-black dark:border-white font-black text-[10px] uppercase tracking-tighter">
           <div>Perícia</div>
           <div className="text-center">Mod</div>
@@ -44,6 +44,7 @@ const SkillSheet: React.FC = () => {
             <SkillRow 
               key={skill.name} 
               skill={skill} 
+              vacantRoles={kingdom.stats.vacantRoles || []}
               kingdomLevel={kingdom.stats.level} 
               attributeMod={kingdom.stats.attributes[skill.linkedAttribute].mod} 
               onUpdate={updateSkill}
@@ -58,18 +59,53 @@ const SkillSheet: React.FC = () => {
 
 const SkillRow: React.FC<{ 
   skill: KingdomSkill; 
+  vacantRoles: string[];
   kingdomLevel: number; 
   attributeMod: number;
   onUpdate: (name: string, updates: Partial<KingdomSkill>) => void;
   onApplyCrit: (type: 'fame' | 'infamy') => void;
-}> = ({ skill, kingdomLevel, attributeMod, onUpdate, onApplyCrit }) => {
+}> = ({ skill, vacantRoles, kingdomLevel, attributeMod, onUpdate, onApplyCrit }) => {
   
   const [lastRoll, setLastRoll] = useState<{ d20: number; total: number; isCrit: boolean; isSuccess: boolean } | null>(null);
   const [isRolling, setIsRolling] = useState(false);
   const [showCritChoice, setShowCritChoice] = useState(false);
 
+  // Regras de Vacância:
+  // - Governante Vago: -1 em TODOS os testes
+  // - Conselheiro Vago: -1 em Cultura
+  // - Tesoureiro Vago: -1 em Economia
+  // - Emissário Vago: -1 em Lealdade
+  // - Vice-Rei Vago: -1 em Estabilidade
+  // - General Vago: -4 em Artes Bélicas
+  // - Magista Vago: -4 em Artes Bélicas
+  // - Protetor Vago: -4 em Atividades de Região (Exploração e Ecossistema)
+
+  const isGovVacant = vacantRoles.includes('governante');
+  const roleAttrMap: Record<KingdomAttributeKey, string> = {
+    culture: 'conselheiro',
+    economy: 'tesoureiro',
+    loyalty: 'emissario',
+    stability: 'viceRei'
+  };
+  
+  const isSpecificRoleVacant = vacantRoles.includes(roleAttrMap[skill.linkedAttribute]);
+  
+  let vacancyPenalty = (isGovVacant ? 1 : 0) + (isSpecificRoleVacant ? 1 : 0);
+
+  // Penalidades de -4 específicas
+  if (skill.name === "ARTES BÉLICAS") {
+    if (vacantRoles.includes('general')) vacancyPenalty += 4;
+    if (vacantRoles.includes('magista')) vacancyPenalty += 4;
+  }
+  
+  if (vacantRoles.includes('protetor')) {
+    if (skill.name === "EXPLORAÇÃO" || skill.name === "ECOSSISTEMA") {
+      vacancyPenalty += 4;
+    }
+  }
+
   const profValue = (skill.rank > 0 ? kingdomLevel : 0) + skill.rank;
-  const totalMod = attributeMod + profValue + skill.statusBonus + skill.circumstanceBonus + skill.itemBonus + skill.otherBonus;
+  const totalMod = attributeMod + profValue + skill.statusBonus + skill.circumstanceBonus + skill.itemBonus + skill.otherBonus - vacancyPenalty;
   const currentDC = skill.targetDC || 0;
 
   const handleRoll = () => {
@@ -115,7 +151,7 @@ const SkillRow: React.FC<{
       
       {/* MOD Total */}
       <div className="flex justify-center">
-        <div className="w-12 h-12 border-4 border-black dark:border-white flex items-center justify-center font-black text-lg bg-white dark:bg-surface-dark shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        <div className={`w-12 h-12 border-4 border-black dark:border-white flex items-center justify-center font-black text-lg bg-white dark:bg-surface-dark shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${vacancyPenalty > 0 ? 'text-red-600' : ''}`} title={vacancyPenalty > 0 ? `Penalidade de Vacância Ativa: -${vacancyPenalty}` : ''}>
           {totalMod >= 0 ? `+${totalMod}` : totalMod}
         </div>
       </div>
@@ -124,7 +160,7 @@ const SkillRow: React.FC<{
 
       {/* Atributo Vinculado */}
       <div className="px-1">
-        <div className="bg-primary/90 text-white text-[9px] font-black text-center py-2 border-2 border-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]">
+        <div className={`text-white text-[9px] font-black text-center py-2 border-2 border-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] ${vacancyPenalty > 0 ? 'bg-red-700' : 'bg-primary/90'}`}>
           {attrLabel}
         </div>
       </div>

@@ -14,9 +14,10 @@ import KingdomFeats from './views/KingdomFeats';
 import KingdomTurn from './views/KingdomTurn';
 import KingdomSelector from './views/KingdomSelector';
 import KingdomEvolution from './views/KingdomEvolution';
+import KingdomRoles from './views/KingdomRoles';
 import { BrutalButton } from './components/UI';
 
-type ViewType = 'sheet' | 'skills' | 'activities' | 'settlements' | 'events' | 'government' | 'charter' | 'heartland' | 'structures' | 'turn' | 'feats' | 'evolution';
+type ViewType = 'sheet' | 'evolution' | 'roles' | 'turn' | 'government' | 'charter' | 'heartland' | 'skills' | 'feats' | 'activities' | 'structures' | 'settlements' | 'events';
 
 const MainApp: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>('sheet');
@@ -62,7 +63,7 @@ const MainApp: React.FC = () => {
 
       <nav className="mb-8 border-b-2 border-black dark:border-white overflow-x-auto pb-1">
         <ul className="flex flex-nowrap gap-6 md:gap-8 font-bold uppercase tracking-wider text-sm min-w-max">
-          {(['sheet', 'evolution', 'turn', 'government', 'charter', 'heartland', 'skills', 'feats', 'activities', 'structures', 'settlements', 'events'] as const).map((view) => (
+          {(['sheet', 'evolution', 'roles', 'turn', 'government', 'charter', 'heartland', 'skills', 'feats', 'activities', 'structures', 'settlements', 'events'] as const).map((view) => (
             <li key={view}>
               <button 
                 onClick={() => setActiveView(view)}
@@ -70,6 +71,7 @@ const MainApp: React.FC = () => {
               >
                 {view === 'sheet' && 'Atributos'}
                 {view === 'evolution' && 'Evolução'}
+                {view === 'roles' && 'Funções'}
                 {view === 'turn' && 'Turno'}
                 {view === 'government' && 'Governo'}
                 {view === 'charter' && 'Licenças'}
@@ -89,6 +91,7 @@ const MainApp: React.FC = () => {
       <main className="flex-grow">
         {activeView === 'sheet' && <KingdomSheet />}
         {activeView === 'evolution' && <KingdomEvolution />}
+        {activeView === 'roles' && <KingdomRoles />}
         {activeView === 'turn' && <KingdomTurn />}
         {activeView === 'government' && <GovernmentList />}
         {activeView === 'charter' && <CharterList />}

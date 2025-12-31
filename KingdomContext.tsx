@@ -11,6 +11,7 @@ interface KingdomContextType {
   deleteKingdom: (id: string) => void;
   updateStats: (updates: Partial<KingdomData['stats']>) => void;
   updateLeaders: (leaders: Record<string, string>) => void;
+  toggleRoleVacancy: (roleId: string) => void;
   updateSkill: (skillName: string, updates: Partial<KingdomSkill>) => void;
   toggleFeat: (featName: string) => void;
   toggleStructure: (name: string, costs: { rp: number; wood?: number; luxury?: number; stone?: number; ore?: number; food?: number }, levelReq: number) => boolean;
@@ -116,6 +117,16 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const updateLeaders = (leaders: Record<string, string>) => {
     updateActiveKingdom(prev => ({ ...prev, leaders: { ...prev.leaders, ...leaders } }));
+  };
+
+  const toggleRoleVacancy = (roleId: string) => {
+    updateActiveKingdom(prev => {
+      const currentVacant = prev.stats.vacantRoles || [];
+      const newVacant = currentVacant.includes(roleId)
+        ? currentVacant.filter(id => id !== roleId)
+        : [...currentVacant, roleId];
+      return { ...prev, stats: { ...prev.stats, vacantRoles: newVacant } };
+    });
   };
 
   const toggleFeat = (featName: string) => {
@@ -392,7 +403,7 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <KingdomContext.Provider value={{ 
       kingdoms, activeKingdom, selectKingdom, createNewKingdom, deleteKingdom,
-      updateStats, updateLeaders, updateSkill, toggleFeat, toggleStructure, setGovernment, setGovernmentFreeBoost, setCharter, setCharterFreeBoost, setCreationFreeBoost, setHeartland,
+      updateStats, updateLeaders, toggleRoleVacancy, updateSkill, toggleFeat, toggleStructure, setGovernment, setGovernmentFreeBoost, setCharter, setCharterFreeBoost, setCreationFreeBoost, setHeartland,
       addSettlement, removeSettlement, updateSettlement,
       addEvent, updateEvent, removeEvent,
       nextTurn, prevTurn

@@ -60,6 +60,7 @@ export interface CharterType {
   freeBoosts: number;
 }
 
+// Added HeartlandType interface to fix the import error in constants.ts
 export interface HeartlandType {
   id: string;
   name: string;
@@ -80,6 +81,7 @@ export interface KingdomStats {
   charterFreeBoosts: (KingdomAttributeKey | null)[];
   governmentFreeBoosts: (KingdomAttributeKey | null)[]; 
   creationFreeBoosts: (KingdomAttributeKey | null)[]; // Novo: Dois bônus livres da criação
+  vacantRoles: string[]; // IDs das funções que estão vagas
   feats: string[];
   builtStructures: string[]; // Nomes ou IDs das estruturas construídas
   attributes: {

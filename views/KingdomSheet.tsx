@@ -1,17 +1,30 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useKingdom } from '../KingdomContext';
 import { BrutalCard, BrutalInput, SectionTitle, BrutalButton } from '../components/UI';
-import { GOVERNMENT_TYPES, CHARTER_TYPES, HEARTLAND_TYPES } from '../constants';
+import { GOVERNMENT_TYPES, CHARTER_TYPES, HEARTLAND_TYPES, LEVEL_CONTROL_DC } from '../constants';
 import { KingdomAttributeKey } from '../types';
 
 const KingdomSheet: React.FC = () => {
-  const { activeKingdom: kingdom, updateStats, updateLeaders, setCreationFreeBoost } = useKingdom();
+  const { activeKingdom: kingdom, updateStats, updateLeaders, toggleRoleVacancy, setCreationFreeBoost } = useKingdom();
   const [lastRPRoll, setLastRPRoll] = useState<{ total: number; dice: number[] } | null>(null);
 
   if (!kingdom) return null;
 
   const currentGov = GOVERNMENT_TYPES.find(g => g.id === kingdom.stats.governmentId);
+
+  // Sincroniza a CD Base com o Nível automaticamente seguindo a regra oficial
+  useEffect(() => {
+    const expectedBase = LEVEL_CONTROL_DC[kingdom.stats.level];
+    if (expectedBase && kingdom.stats.controlDC.base !== expectedBase) {
+      updateStats({ 
+        controlDC: { 
+          ...kingdom.stats.controlDC, 
+          base: expectedBase 
+        } 
+      });
+    }
+  }, [kingdom.stats.level, updateStats, kingdom.stats.controlDC]);
 
   const handleAttrChange = (key: string, val: string) => {
     const num = parseInt(val) || 0;
@@ -34,7 +47,7 @@ const KingdomSheet: React.FC = () => {
     updateStats({ resources: newResources });
   };
 
-  const size = kingdom.stats.controlDC.size;
+  const hexCount = kingdom.stats.controlDC.size;
   const level = kingdom.stats.level;
   const bonusDice = kingdom.stats.resources.bonusDice || 0;
   const penaltyDice = kingdom.stats.resources.penaltyDice || 0;
@@ -42,10 +55,27 @@ const KingdomSheet: React.FC = () => {
 
   let dieSides = 4;
   let dieType = "d4";
-  if (size >= 100) { dieSides = 12; dieType = "d12"; }
-  else if (size >= 50) { dieSides = 10; dieType = "d10"; }
-  else if (size >= 25) { dieSides = 8; dieType = "d8"; }
-  else if (size >= 10) { dieSides = 6; dieType = "d6"; }
+  if (hexCount >= 100) { dieSides = 12; dieType = "d12"; }
+  else if (hexCount >= 50) { dieSides = 10; dieType = "d10"; }
+  else if (hexCount >= 25) { dieSides = 8; dieType = "d8"; }
+  else if (hexCount >= 10) { dieSides = 6; dieType = "d6"; }
+
+  // Regra de Tamanho do Reino
+  const getSizeMod = (count: number) => {
+    if (count >= 100) return 4; // Domínio
+    if (count >= 50) return 3;  // País
+    if (count >= 25) return 2;  // Estado
+    if (count >= 10) return 1;  // Província
+    return 0;                   // Território
+  };
+
+  const getSizeLabel = (count: number) => {
+    if (count >= 100) return "Domínio";
+    if (count >= 50) return "País";
+    if (count >= 25) return "Estado";
+    if (count >= 10) return "Província";
+    return "Território";
+  };
 
   const handleRollResources = () => {
     const dice: number[] = [];
@@ -60,15 +90,15 @@ const KingdomSheet: React.FC = () => {
   };
 
   const handleSizeChange = (val: string) => {
-    const newSize = Math.min(100, Math.max(0, parseInt(val) || 0));
+    const newSize = Math.max(0, parseInt(val) || 0);
     updateStats({ controlDC: { ...kingdom.stats.controlDC, size: newSize } });
   };
 
   const getFoodConsumption = () => {
-    if (size < 10) return 1;
-    if (size < 25) return 2;
-    if (size < 50) return 4;
-    if (size < 100) return 6;
+    if (hexCount < 10) return 1;
+    if (hexCount < 25) return 2;
+    if (hexCount < 50) return 4;
+    if (hexCount < 100) return 6;
     return 8;
   };
 
@@ -102,6 +132,9 @@ const KingdomSheet: React.FC = () => {
   };
 
   const creationBoosts = kingdom.stats.creationFreeBoosts || [null, null];
+  const isGovVacant = kingdom.stats.vacantRoles?.includes('governante');
+  const sizeMod = getSizeMod(hexCount);
+  const controlDCTotal = kingdom.stats.controlDC.base + sizeMod + (isGovVacant ? 2 : 0);
 
   return (
     <div className="flex flex-col gap-10">
@@ -142,7 +175,6 @@ const KingdomSheet: React.FC = () => {
                     {key === 'culture' ? 'Cultura' : key === 'economy' ? 'Economia' : key === 'loyalty' ? 'Lealdade' : 'Estabilidade'}
                   </div>
                   
-                  {/* Checkbox de Boost Livre da Criação */}
                   <div className="w-20 flex justify-center items-center">
                     <input 
                       type="checkbox"
@@ -183,11 +215,11 @@ const KingdomSheet: React.FC = () => {
           </BrutalCard>
 
           <BrutalCard className="relative py-8">
-            <div className="absolute -top-4 left-6 bg-black dark:bg-white text-white dark:text-black px-3 py-1 font-black text-xs uppercase border-2 border-black shadow-brutal">CD de Controle</div>
+            <div className="absolute -top-4 left-6 bg-black dark:bg-white text-white dark:text-black px-3 py-1 font-black text-xs uppercase border-2 border-black shadow-brutal">CD de Controle Oficial</div>
             <div className="flex items-center justify-around gap-2 mt-2">
               <div className="flex flex-col items-center">
-                <div className="w-24 h-16 border-4 border-black dark:border-white flex items-center justify-center text-3xl font-black bg-gray-100 dark:bg-gray-800 shadow-brutal">
-                  {kingdom.stats.controlDC.base + kingdom.stats.controlDC.size}
+                <div className={`w-24 h-16 border-4 border-black dark:border-white flex items-center justify-center text-3xl font-black shadow-brutal ${isGovVacant || sizeMod > 0 ? 'bg-yellow-50 text-primary' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                  {controlDCTotal}
                 </div>
                 <span className="text-[10px] font-black uppercase mt-2">Total</span>
               </div>
@@ -197,17 +229,31 @@ const KingdomSheet: React.FC = () => {
                   type="number" 
                   value={kingdom.stats.controlDC.base}
                   onChange={(e) => updateStats({ controlDC: { ...kingdom.stats.controlDC, base: parseInt(e.target.value) || 0 } })}
-                  className="w-20 border-b-4 border-black dark:border-white bg-transparent text-center font-black text-2xl focus:ring-0 outline-none pb-1"
+                  className="w-24 border-b-4 border-black dark:border-white bg-transparent text-center font-black text-2xl focus:ring-0 outline-none pb-1"
                 />
-                <span className="text-[10px] uppercase font-bold mt-1">Base</span>
+                <span className="text-[10px] uppercase font-bold mt-1">Base (Lvl)</span>
               </div>
               <span className="text-xl font-black">+</span>
               <div className="flex flex-col items-center">
-                <div className="w-20 border-b-4 border-black dark:border-white bg-transparent text-center font-black text-2xl pb-1">
-                  {size}
+                <div className="w-12 border-b-4 border-black dark:border-white bg-transparent text-center font-black text-2xl pb-1">
+                  {sizeMod}
                 </div>
-                <span className="text-[10px] uppercase font-bold mt-1">Tam</span>
+                <span className="text-[10px] uppercase font-bold mt-1">Tam.</span>
               </div>
+              {(isGovVacant) && (
+                <>
+                  <span className="text-xl font-black text-red-600">+</span>
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 border-b-4 border-red-600 bg-transparent text-center font-black text-2xl pb-1 text-red-600">
+                      2
+                    </div>
+                    <span className="text-[10px] uppercase font-bold mt-1 text-red-600">Vago</span>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="mt-4 text-[9px] font-black uppercase text-center opacity-70">
+              CD Sugerida Nível {level}: {LEVEL_CONTROL_DC[level] || '??'}
             </div>
           </BrutalCard>
 
@@ -339,19 +385,28 @@ const KingdomSheet: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               {Object.entries(kingdom.leaders).map(([role, name]) => (
-                <div key={role} className="flex items-start gap-3">
-                  <div className="flex-grow">
-                    <div className="font-display font-black text-[10px] uppercase leading-none text-primary mb-1">
+                <div key={role} className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="font-display font-black text-[10px] uppercase leading-none text-primary">
                       {role.replace(/([A-Z])/g, ' $1').trim()}
                     </div>
-                    <input 
-                      type="text"
-                      placeholder="..."
-                      value={name}
-                      onChange={(e) => updateLeaders({ [role]: e.target.value })}
-                      className="w-full border-b-2 border-black dark:border-white bg-transparent text-sm font-bold focus:ring-0 p-0" 
-                    />
+                    <div className="flex items-center gap-1">
+                      <span className="text-[8px] font-black uppercase opacity-50">Vago?</span>
+                      <input 
+                        type="checkbox"
+                        checked={kingdom.stats.vacantRoles?.includes(role)}
+                        onChange={() => toggleRoleVacancy(role)}
+                        className="w-4 h-4 border-2 border-black focus:ring-0 cursor-pointer"
+                      />
+                    </div>
                   </div>
+                  <input 
+                    type="text"
+                    placeholder="..."
+                    value={name}
+                    onChange={(e) => updateLeaders({ [role]: e.target.value })}
+                    className={`w-full border-b-2 bg-transparent text-sm font-bold focus:ring-0 p-0 ${kingdom.stats.vacantRoles?.includes(role) ? 'border-red-600 text-red-600' : 'border-black dark:border-white'}`} 
+                  />
                 </div>
               ))}
             </div>
@@ -391,19 +446,27 @@ const KingdomSheet: React.FC = () => {
           </BrutalCard>
 
           <BrutalCard className="relative py-8">
-            <div className="absolute -top-4 left-6 bg-accent text-white px-3 py-1 font-black text-xs uppercase border-2 border-black shadow-brutal">Tamanho do Reino</div>
+            <div className="absolute -top-4 left-6 bg-accent text-white px-3 py-1 font-black text-xs uppercase border-2 border-black shadow-brutal">Hexágonos Controlados</div>
             <div className="flex flex-col items-center justify-between space-y-4">
               <div className="flex items-center gap-4">
-                <input 
-                  type="number" 
-                  min="0" max="100" value={size}
-                  onChange={(e) => handleSizeChange(e.target.value)}
-                  className="w-28 h-14 border-4 border-black dark:border-white text-center font-black text-3xl bg-white dark:bg-surface-dark shadow-brutal"
-                />
+                <div className="text-center">
+                  <span className="text-[10px] font-black uppercase opacity-60 block">Nº de Hexágonos</span>
+                  <input 
+                    type="number" 
+                    min="0" value={hexCount}
+                    onChange={(e) => handleSizeChange(e.target.value)}
+                    className="w-28 h-14 border-4 border-black dark:border-white text-center font-black text-3xl bg-white dark:bg-surface-dark shadow-brutal"
+                  />
+                </div>
+                <div className="bg-black text-white p-3 border-2 border-white shadow-brutal">
+                  <span className="text-[10px] font-black uppercase block opacity-60">Tipo de Nação</span>
+                  <div className="text-sm font-black uppercase tracking-widest">{getSizeLabel(hexCount)}</div>
+                  <div className="text-[10px] font-bold text-accent">Modificador: +{sizeMod}</div>
+                </div>
               </div>
               <div className="w-full px-4">
                 <input 
-                  type="range" min="0" max="100" step="1" value={size} 
+                  type="range" min="0" max="150" step="1" value={hexCount} 
                   onChange={(e) => handleSizeChange(e.target.value)}
                   className="w-full accent-primary h-2 bg-gray-200 border-2 border-black appearance-none"
                 />
